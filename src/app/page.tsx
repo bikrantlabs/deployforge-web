@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { logoutAction } from "@/app/auth/_actions/logout.action";
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 
 export const instant = false;

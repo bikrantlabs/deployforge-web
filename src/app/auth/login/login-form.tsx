@@ -6,12 +6,12 @@ import { useActionState, useEffect } from "react";
 import { cn } from "cn";
 import { toast } from "sonner";
 
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { loginUser } from "../_actions/login.action";
 import { FormSuccess } from "../_components/form-success";
-import { FieldError } from "../../components/field-error";
+import { FieldError } from "@/components/field-error";
 
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginUser, {});

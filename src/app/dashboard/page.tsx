@@ -2,15 +2,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { logoutAction } from "@/app/auth/_actions/logout.action";
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 
 export default async function DashboardPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-black">
-      <h1 className="text-2xl font-bold text-black dark:text-zinc-50">
-        Protected Dashboard
-      </h1>
       <Suspense fallback={<div>Loading...</div>}>
         <UserHeader />
       </Suspense>
@@ -18,6 +15,12 @@ export default async function DashboardPage() {
         <form action={logoutAction}>
           <Button>Logout</Button>
         </form>
+        <Button asChild>
+          <Link href="/projects/new">Create Project</Link>
+        </Button>
+        <Button asChild>
+          <Link href="/projects">All Projects</Link>
+        </Button>
         <Link
           href="/"
           className="text-primary underline-offset-4 hover:underline"

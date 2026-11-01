@@ -7,7 +7,10 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import { REFRESH_TOKEN_COOKIE_KEY } from "@/lib/cookie-config";
+import {
+  ACCESS_TOKEN_COOKIE_KEY,
+  REFRESH_TOKEN_COOKIE_KEY,
+} from "@/lib/cookie-config";
 
 const AUTH_PREFIX = "/auth";
 const PROTECTED_PREFIX = "/dashboard";
@@ -17,9 +20,9 @@ const DASHBOARD_URL = "/dashboard";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // The refresh token is the real session: the access token comes and goes
-  // every 14 minutes, the refresh token lasts 7 days.
-  const isLoggedIn = request.cookies.has(REFRESH_TOKEN_COOKIE_KEY);
+  const isLoggedIn =
+    request.cookies.has(REFRESH_TOKEN_COOKIE_KEY) &&
+    request.cookies.has(ACCESS_TOKEN_COOKIE_KEY);
 
   if (pathname.startsWith(PROTECTED_PREFIX) && !isLoggedIn) {
     return NextResponse.redirect(new URL(LOGIN_URL, request.url));

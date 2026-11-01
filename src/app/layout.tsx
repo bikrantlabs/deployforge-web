@@ -5,8 +5,8 @@ import "./globals.css";
 
 import { cn } from "cn";
 
-import { SessionKeeper } from "./components/session-keeper";
-import { Toaster } from "./components/ui/sonner";
+import { SessionKeeper } from "@/components/session-keeper";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

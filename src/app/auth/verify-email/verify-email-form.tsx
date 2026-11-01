@@ -4,18 +4,18 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { toast } from "sonner";
 
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/app/components/ui/input-otp";
+} from "@/components/ui/input-otp";
 import { useCountdown } from "@/hooks/use-countdown";
 
 import { sendVerificationEmailAction } from "../_actions/send-verification-email.action";
 import { verifyEmailAction } from "../_actions/verify-email.action";
 import { FormSuccess } from "../_components/form-success";
-import { FieldError } from "../../components/field-error";
+import { FieldError } from "@/components/field-error";
 
 const CODE_LENGTH = 6;
 const SLOTS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
