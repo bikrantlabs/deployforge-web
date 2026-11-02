@@ -20,9 +20,10 @@ export async function inspectProject(
         sourceUrl: response.data.project.sourceUrl,
       },
       detection: {
-        providers: response.data.detection.providers,
+        detectedProviders: response.data.detection.detectedProviders,
+        steps: response.data.detection.steps,
         metadata: response.data.detection.metadata,
-        packages: response.data.detection.packages,
+        resolvedPackages: response.data.detection.resolvedPackages,
         startCommand: response.data.detection.startCommand,
         logs: response.data.detection.logs,
       },

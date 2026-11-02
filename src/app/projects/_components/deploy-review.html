@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review repository · DeployForge</title>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#fff; --surface-2:#f5f3ef;
+  --border:#e7e4de; --border-strong:#d6d2ca;
+  --text:#1b1a17; --muted:#78746b;
+  --primary:#1b1a17; --on-primary:#fff;
+  --ok:#188a4b; --ok-bg:#e8f6ee;
+  --run:#2563eb; --run-bg:#eaf1ff;
+  --err:#c93a2b;
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(20,18,12,.04),0 6px 18px rgba(20,18,12,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#111110; --surface:#191917; --surface-2:#211f1d;
+    --border:#2c2a27; --border-strong:#3a3733;
+    --text:#f0eee9; --muted:#9a968c;
+    --primary:#f0eee9; --on-primary:#151513;
+    --ok:#4cc486; --ok-bg:#12261b;
+    --run:#6b9bff; --run-bg:#152033;
+    --err:#ff7a6b; --shadow:none;
+  }
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; padding-bottom:150px;
+  background:var(--bg); color:var(--text);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--run);outline-offset:2px}
+.ic{display:inline-flex;flex:none}
+.wrap{max-width:720px;margin:0 auto;padding:56px 20px 0}
+
+/* ---------- header ---------- */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:13px;
+}
+.badge.ok{color:var(--ok)}
+h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.02em}
+.repo{
+  display:inline-flex;align-items:center;gap:6px;margin-top:6px;
+  color:var(--muted);font-size:14px;text-decoration:none;
+}
+.repo:hover{color:var(--text)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:40px;padding:0 16px;border-radius:10px;font-weight:500;white-space:nowrap;
+  border:1px solid var(--border-strong);background:var(--surface);
+  transition:transform .15s,box-shadow .15s,opacity .15s;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:active{transform:none}
+.btn.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+.link-btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:0;border-radius:8px;
+  background:none;font-weight:500;font-size:14px;
+}
+.link-btn:hover{background:var(--surface-2)}
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border:0;border-radius:8px;background:none;color:var(--muted);
+}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+
+/* ---------- sections ---------- */
+.section{margin-top:40px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;min-height:34px}
+.section-head h2{margin:0;font-size:16px;font-weight:600}
+.head-right{display:flex;align-items:center;gap:6px}
+.count{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+
+/* ---------- stack ---------- */
+.pills{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.pill{
+  display:flex;flex-direction:column;align-items:flex-start;text-align:left;
+  padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);
+  transition:border-color .15s,box-shadow .15s;
+}
+.pill:hover{border-color:var(--border-strong)}
+.pill.open{border-color:var(--border-strong);box-shadow:var(--shadow)}
+.pill-main{display:flex;align-items:baseline;gap:10px}
+.pill-name{font-weight:600}
+.pill-ver{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.pill-sub{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.pill-sub>span{overflow:hidden;min-height:0}
+.pill-sub>span>span{display:block;padding-top:6px;font-size:12.5px;color:var(--muted)}
+.pill.open .pill-sub{grid-template-rows:1fr}
+.meta{display:flex;flex-wrap:wrap;gap:4px 20px;margin-top:14px;font-size:13.5px;color:var(--muted)}
+.meta b{margin-left:6px;font-weight:500;color:var(--text)}
+
+/* ---------- build steps (timeline) ---------- */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.step{position:relative;display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:start}
+.step::before{
+  content:"";position:absolute;left:13px;top:34px;bottom:-14px;width:2px;
+  background:var(--border);transition:background .4s;
+}
+.step:last-child::before{display:none}
+.step[data-state=done]::before{background:var(--ok)}
+.node{
+  width:28px;height:28px;margin-top:8px;border-radius:50%;
+  display:grid;place-items:center;font-size:13px;font-weight:600;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--muted);
+  transition:background .3s,color .3s,border-color .3s;
+}
+.node .num,.node .spin,.node .ck{display:none}
+.step[data-state=idle] .node .num{display:block}
+.step[data-state=running] .node .spin{display:block}
+.step[data-state=done] .node .ck{display:block}
+.step[data-state=running] .node{color:var(--run);border-color:var(--run);background:var(--run-bg)}
+.step[data-state=done] .node{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.spin{
+  width:13px;height:13px;border-radius:50%;
+  border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite;
+}
+.step-card{
+  border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+}
+.step[data-state=running] .step-card{border-color:var(--run);box-shadow:0 0 0 3px var(--run-bg)}
+.step-head{
+  width:100%;display:grid;grid-template-columns:auto auto 1fr auto auto;align-items:center;gap:10px;
+  padding:12px 14px;border:0;background:none;text-align:left;
+}
+.step-title{font-weight:600}
+.step-count{font-size:13px;color:var(--muted)}
+.step-preview{
+  min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  font-family:var(--mono);font-size:12.5px;color:var(--muted);opacity:.8;transition:opacity .2s;
+}
+.step.open .step-preview{opacity:0}
+.step-time{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chev{display:inline-flex;color:var(--muted);transition:transform .25s}
+.step.open .chev{transform:rotate(180deg)}
+.step-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+.step.open .step-body{grid-template-rows:1fr}
+.step-clip{overflow:hidden;min-height:0}
+.cmds{list-style:none;margin:0;padding:0 10px 10px;display:grid;gap:6px}
+.cmd-btn{
+  position:relative;overflow:hidden;width:100%;display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;border:0;border-radius:9px;background:var(--surface-2);text-align:left;
+  transition:background .2s;
+}
+.cmd-btn code{flex:1;font-family:var(--mono);font-size:13px;white-space:pre-wrap;word-break:break-all}
+.prompt{font-family:var(--mono);color:var(--muted);line-height:1.5}
+.cmd-btn .ck{display:none;color:var(--ok)}
+.cmd[data-state=done] .prompt{display:none}
+.cmd[data-state=done] .ck{display:inline-flex}
+.cmd[data-state=running] .cmd-btn{background:var(--run-bg)}
+.cmd[data-state=running] .prompt{color:var(--run)}
+.cmd[data-state=running] .cmd-btn::after{
+  content:"";position:absolute;left:0;bottom:0;height:2px;width:35%;border-radius:2px;
+  background:var(--run);animation:slide 1.1s ease-in-out infinite;
+}
+.copy-hint{opacity:0;color:var(--muted);transition:opacity .15s}
+.cmd-btn:hover .copy-hint,.cmd-btn:focus-visible .copy-hint{opacity:1}
+@media (hover:none){.copy-hint{opacity:.6}}
+
+/* ---------- start command ---------- */
+.start{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px}
+.start code{flex:1;min-width:0;font-family:var(--mono);font-size:14px}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong);display:inline-block}
+.status[data-state=starting] .dot{background:var(--run);animation:pulse-run 1.2s infinite}
+.status[data-state=live]{color:var(--ok)}
+.status[data-state=live] .dot{background:var(--ok);animation:pulse-ok 1.8s infinite}
+.dot.live{background:var(--ok);animation:pulse-ok 1.8s infinite}
+
+/* ---------- env vars ---------- */
+.env{padding:6px}
+.env-head,.env-row{
+  display:grid;grid-template-columns:1fr 1fr 36px;column-gap:8px;padding:4px 8px;align-items:center;
+}
+.env-head{padding-top:8px;font-size:12px;color:var(--muted)}
+.input{
+  width:100%;min-width:0;height:40px;padding:0 12px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface);
+  font-family:var(--mono);font-size:13px;transition:border-color .15s;
+}
+.input:focus{outline:none;border-color:var(--text)}
+.input::placeholder{color:var(--muted);opacity:.6}
+.val{position:relative}
+.val .input{padding-right:40px}
+.eye{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border:0;border-radius:7px;background:none;color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.eye:hover{color:var(--text);background:var(--surface-2)}
+.env-msg{display:none;grid-column:1/-1;margin:4px 0 0;font-size:12.5px;color:var(--err)}
+.env-row[data-error] .key{border-color:var(--err)}
+.env-row[data-error] .env-msg{display:block}
+.env-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 8px 8px}
+.hint{font-size:12.5px;color:var(--muted)}
+[data-mode=deploying] .env,[data-mode=live] .env{opacity:.55}
+
+/* ---------- dock ---------- */
+.dock{
+  position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;
+  width:min(720px,calc(100% - 32px));overflow:hidden;
+  padding:12px 12px 12px 18px;border:1px solid var(--border-strong);border-radius:16px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 10px 32px rgba(0,0,0,.1);
+}
+.pane{display:none;align-items:center;justify-content:space-between;gap:16px}
+.dock[data-mode=idle] .pane-idle,
+.dock[data-mode=deploying] .pane-deploy,
+.dock[data-mode=live] .pane-live{display:flex}
+.dock-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dock-text strong{font-size:14px;display:flex;align-items:center;gap:8px}
+.dock-text span{font-size:13px;color:var(--muted)}
+.progress{position:absolute;left:0;right:0;bottom:0;height:3px}
+.dock[data-mode=idle] .progress{display:none}
+.bar{height:100%;width:0;background:var(--run);transition:width .5s ease,background .3s}
+.dock[data-mode=live] .bar{background:var(--ok)}
+
+.toast{
+  position:fixed;left:50%;bottom:92px;z-index:20;transform:translate(-50%,10px);
+  padding:8px 14px;border-radius:999px;font-size:13px;
+  background:var(--primary);color:var(--on-primary);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- motion ---------- */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@keyframes pulse-run{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--run) 50%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@keyframes pulse-ok{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 50%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.section,.top{animation:rise .5s ease both}
+.section:nth-of-type(1){animation-delay:.05s}
+.section:nth-of-type(2){animation-delay:.12s}
+.section:nth-of-type(3){animation-delay:.19s}
+.section:nth-of-type(4){animation-delay:.26s}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ---------- small screens ---------- */
+@media (max-width:560px){
+  .wrap{padding-top:32px}
+  h1{font-size:25px}
+  .env-head{display:none}
+  .env-row{grid-template-columns:1fr 36px;row-gap:6px;padding:6px 8px}
+  .env-row .key{grid-column:1;grid-row:1}
+  .env-row .val{grid-column:1;grid-row:2}
+  .env-row .icon-btn{grid-column:2;grid-row:1/3;align-self:center}
+  .hint{display:none}
+  .status span:last-child{display:none}
+  .step-head{grid-template-columns:auto 1fr auto auto}
+  .step-count{display:none}
+  .step-preview{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="badges">
+        <span class="badge ok"><span data-icon="check"></span>Already in DeployForge</span>
+        <span class="badge" id="provider-badge"></span>
+      </div>
+      <h1 id="repo-name"></h1>
+      <a class="repo" id="repo-link" target="_blank" rel="noopener"><span id="repo-url"></span><span data-icon="ext"></span></a>
+    </div>
+    <button class="btn primary" id="back" type="button"><span data-icon="back"></span>Back</button>
+  </header>
+
+  <section class="section" aria-labelledby="h-stack">
+    <div class="section-head"><h2 id="h-stack">Detected runtime</h2><span class="count" id="stack-count"></span></div>
+    <div class="pills" id="pills"></div>
+    <div class="meta" id="meta"></div>
+  </section>
+
+  <section class="section" aria-labelledby="h-steps">
+    <div class="section-head">
+      <h2 id="h-steps">Build steps</h2>
+      <div class="head-right">
+        <span class="count" id="steps-count"></span>
+        <button class="link-btn" id="toggle-all" type="button">Expand all</button>
+      </div>
+    </div>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section class="section" aria-labelledby="h-start">
+    <div class="section-head"><h2 id="h-start">Start command</h2></div>
+    <div class="card start" id="start"></div>
+  </section>
+
+  <section class="section" aria-labelledby="h-env">
+    <div class="section-head"><h2 id="h-env">Environment variables</h2><span class="count" id="env-count"></span></div>
+    <div class="card env" id="env">
+      <div class="env-head"><span>Key</span><span>Value</span><span></span></div>
+      <div id="env-rows"></div>
+      <div class="env-foot">
+        <button class="link-btn" id="add-var" type="button"><span data-icon="plus"></span>Add variable</button>
+        <span class="hint">Tip: paste a .env file into any key field</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="dock" id="dock" data-mode="idle">
+  <div class="pane pane-idle">
+    <div class="dock-text"><strong>Ready to deploy</strong><span id="dock-summary"></span></div>
+    <button class="btn primary" id="deploy" type="button">Deploy</button>
+  </div>
+  <div class="pane pane-deploy">
+    <div class="dock-text"><strong id="stage">Cloning repository…</strong><span id="elapsed">0:00</span></div>
+    <button class="btn" id="cancel" type="button">Cancel</button>
+  </div>
+  <div class="pane pane-live">
+    <div class="dock-text"><strong><span class="dot live"></span>Live</strong><span id="live-url"></span></div>
+    <button class="btn" id="reset" type="button">Start over</button>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ------------------------------------------------------------------
+   Data: same shape as your ProjectDetection type. Swap this object
+   for the real response and the page renders from it.
+------------------------------------------------------------------- */
+const d = {
+  repo: { name: "Deployforge Web", url: "https://github.com/bikrantlabs/deployforge-web" },
+  detectedProviders: ["node"],
+  metadata: { nodePackageManager: "pnpm", nodeRuntime: "next", providers: "node" },
+  resolvedPackages: [
+    { name: "node", requestedVersion: "lts", resolvedVersion: "24.22.0", source: "railpack default" },
+    { name: "pnpm", requestedVersion: "9",   resolvedVersion: "9.15.9",  source: "railpack default" }
+  ],
+  steps: [
+    { name: "install", commands: [
+      "mkdir -p /app/node_modules/.cache",
+      "pnpm add -g node-gyp",
+      "pnpm install --frozen-lockfile --prefer-offline"
+    ]},
+    { name: "build", commands: ["pnpm run build"] }
+  ],
+  startCommand: "pnpm run start"
+};
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const svg = p => `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  chev:  svg('<path d="m6 9 6 6 6-6"/>'),
+  check: svg('<path d="M20 6 9 17l-5-5"/>'),
+  copy:  svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+  eye:   svg('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'),
+  eyeOff:svg('<path d="M9.9 4.2A10.6 10.6 0 0 1 12 4c6.5 0 10 8 10 8a17 17 0 0 1-3.2 4.3M6.6 6.6A16.6 16.6 0 0 0 2 12s3.5 8 10 8a10 10 0 0 0 5.4-1.6"/><path d="m2 2 20 20"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+  x:     svg('<path d="M18 6 6 18M6 6l12 12"/>'),
+  plus:  svg('<path d="M12 5v14M5 12h14"/>'),
+  back:  svg('<path d="M19 12H5M12 19l-7-7 7-7"/>'),
+  ext:   svg('<path d="M7 17 17 7M8 7h9v9"/>')
+};
+function h(tag, props = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'html') el.innerHTML = v;          // only used for the static icons above
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v === true) el.setAttribute(k, '');
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) el.append(kid);
+  return el;
+}
+const ic = name => h('span', { class: 'ic', html: ICON[name] });
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmt = ms => { const s = ms / 1000; return s < 60 ? s.toFixed(1) + 's' : Math.floor(s / 60) + 'm ' + Math.round(s % 60) + 's'; };
+const mmss = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = h('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text;
+    document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  toast('Copied to clipboard');
+}
+document.querySelectorAll('[data-icon]').forEach(el => el.replaceChildren(ic(el.dataset.icon)));
+
+/* ---------- header ---------- */
+$('#repo-name').textContent = d.repo.name;
+$('#repo-url').textContent = d.repo.url.replace(/^https?:\/\//, '');
+$('#repo-link').href = d.repo.url;
+$('#provider-badge').textContent = d.detectedProviders.join(', ');
+$('#back').onclick = () => history.back();   // TODO: route back to repository picker
+
+/* ---------- runtime: pills that expand for detail + one quiet meta line ---------- */
+const metaLabels = {
+  nodePackageManager: 'Package manager', pythonPackageManager: 'Package manager',
+  nodeRuntime: 'Runtime', pythonRuntime: 'Runtime', providers: 'Provider'
+};
+$('#stack-count').textContent = `${d.resolvedPackages.length} packages`;
+d.resolvedPackages.forEach(p => {
+  const pill = h('button', { class: 'pill', type: 'button', 'aria-expanded': 'false' },
+    h('span', { class: 'pill-main' },
+      h('span', { class: 'pill-name', text: p.name }),
+      h('span', { class: 'pill-ver', text: p.resolvedVersion })),
+    h('span', { class: 'pill-sub' },
+      h('span', {}, h('span', { text: `Requested ${p.requestedVersion} · ${p.source}` }))));
+  pill.onclick = () => pill.setAttribute('aria-expanded', pill.classList.toggle('open'));
+  $('#pills').append(pill);
+});
+Object.entries(d.metadata).forEach(([k, v]) =>
+  $('#meta').append(h('span', { text: metaLabels[k] || k }, h('b', { text: v }))));
+
+/* ---------- build steps ---------- */
+function setOpen(el, open) {
+  el.classList.toggle('open', open);
+  el.querySelector('.step-head').setAttribute('aria-expanded', open);
+  syncToggleAll();
+}
+function syncToggleAll() {
+  const all = [...document.querySelectorAll('.step')];
+  $('#toggle-all').textContent = all.every(s => s.classList.contains('open')) ? 'Collapse all' : 'Expand all';
+}
+const cmdTotal = d.steps.reduce((n, s) => n + s.commands.length, 0);
+$('#steps-count').textContent = `${d.steps.length} steps · ${cmdTotal} commands`;
+d.steps.forEach((s, i) => {
+  const li = h('li', { class: 'step', 'data-state': 'idle' });
+  const body = h('div', { class: 'step-body' }, h('div', { class: 'step-clip' },
+    h('ul', { class: 'cmds' }, s.commands.map(c =>
+      h('li', { class: 'cmd', 'data-state': 'idle' },
+        h('button', { class: 'cmd-btn', type: 'button', title: 'Click to copy', onclick: () => copy(c) },
+          h('span', { class: 'prompt', text: '❯' }),
+          h('span', { class: 'ck' }, ic('check')),
+          h('code', { text: c }),
+          h('span', { class: 'copy-hint' }, ic('copy'))))))));
+  const head = h('button', { class: 'step-head', type: 'button', 'aria-expanded': 'false', onclick: () => setOpen(li, !li.classList.contains('open')) },
+    h('span', { class: 'step-title', text: cap(s.name) }),
+    h('span', { class: 'step-count', text: `${s.commands.length} command${s.commands.length === 1 ? '' : 's'}` }),
+    h('span', { class: 'step-preview', text: s.commands[0] || '' }),
+    h('span', { class: 'step-time' }),
+    h('span', { class: 'chev' }, ic('chev')));
+  li.append(
+    h('span', { class: 'node' }, h('span', { class: 'num', text: i + 1 }), h('span', { class: 'spin' }), h('span', { class: 'ck' }, ic('check'))),
+    h('div', { class: 'step-card' }, head, body));
+  $('#steps').append(li);
+});
+$('#toggle-all').onclick = () => {
+  const all = [...document.querySelectorAll('.step')];
+  const open = !all.every(s => s.classList.contains('open'));
+  all.forEach(s => setOpen(s, open));
+};
+
+/* ---------- start command ---------- */
+$('#start').append(
+  h('span', { class: 'prompt', text: '❯' }),
+  h('code', { text: d.startCommand }),
+  h('span', { class: 'status', id: 'start-status', 'data-state': 'idle' },
+    h('span', { class: 'dot' }), h('span', { id: 'start-status-text', text: 'Not running' })),
+  h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Copy start command', onclick: () => copy(d.startCommand) }, ic('copy')));
+function setStart(state, text) {
+  $('#start-status').dataset.state = state;
+  $('#start-status-text').textContent = text;
+}
+
+/* ---------- environment variables ---------- */
+const envRows = $('#env-rows');
+let envState = { count: 0, errors: 0 };
+
+function parseEnv(text) {
+  const out = [];
+  for (let line of text.split(/\r?\n/)) {
+    line = line.trim();
+    if (!line || line.startsWith('#')) continue;
+    line = line.replace(/^export\s+/, '');
+    const i = line.indexOf('=');
+    if (i < 1) continue;
+    const key = line.slice(0, i).trim();
+    let val = line.slice(i + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
+    else val = val.replace(/\s+#.*$/, '');
+    out.push([key, val]);
+  }
+  return out;
+}
+function validate() {
+  const rows = [...envRows.children];
+  const seen = new Map();
+  rows.forEach(r => { const k = r.querySelector('.key').value.trim(); if (k) seen.set(k, (seen.get(k) || 0) + 1); });
+  let count = 0, errors = 0;
+  rows.forEach(r => {
+    const k = r.querySelector('.key').value.trim();
+    let msg = '';
+    if (k) {
+      count++;
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) msg = 'Use letters, numbers and underscores, and don’t start with a number.';
+      else if (seen.get(k) > 1) msg = 'This key is already used.';
+    }
+    r.querySelector('.env-msg').textContent = msg;
+    r.toggleAttribute('data-error', !!msg);
+    if (msg) errors++;
+  });
+  envState = { count, errors };
+  $('#env-count').textContent = count ? `${count} added` : 'Optional';
+  updateDock();
+}
+function onPaste(e, row) {
+  const text = e.clipboardData.getData('text');
+  if (!/[=\n]/.test(text)) return;
+  const pairs = parseEnv(text);
+  if (!pairs.length) return;
+  e.preventDefault();
+  const key = row.querySelector('.key'), val = row.querySelector('.val input');
+  let i = 0;
+  if (!key.value.trim() && !val.value) { key.value = pairs[0][0]; val.value = pairs[0][1]; i = 1; }
+  for (; i < pairs.length; i++) addRow(pairs[i][0], pairs[i][1]);
+  validate();
+  toast(`Imported ${pairs.length} variable${pairs.length > 1 ? 's' : ''}`);
+}
+function addRow(k = '', v = '', focus = false) {
+  const key = h('input', { class: 'input key', placeholder: 'DATABASE_URL', 'aria-label': 'Variable key', spellcheck: 'false', autocomplete: 'off', autocapitalize: 'off', value: k });
+  const val = h('input', { class: 'input', type: 'password', placeholder: 'value', 'aria-label': 'Variable value', spellcheck: 'false', autocomplete: 'off', value: v });
+  const eye = h('button', { class: 'eye', type: 'button', 'aria-label': 'Show value' }, ic('eye'));
+  eye.onclick = () => {
+    const show = val.type === 'password';
+    val.type = show ? 'text' : 'password';
+    eye.replaceChildren(ic(show ? 'eyeOff' : 'eye'));
+    eye.setAttribute('aria-label', show ? 'Hide value' : 'Show value');
+  };
+  const rm = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Remove variable' }, ic('x'));
+  const msg = h('p', { class: 'env-msg' });
+  const row = h('div', { class: 'env-row' }, key, h('div', { class: 'val' }, val, eye), rm, msg);
+  key.addEventListener('input', validate);
+  key.addEventListener('paste', e => onPaste(e, row));
+  val.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && row === envRows.lastElementChild) { e.preventDefault(); addRow('', '', true); }
+  });
+  rm.onclick = () => {
+    if (envRows.children.length > 1) row.remove(); else { key.value = ''; val.value = ''; }
+    validate();
+  };
+  envRows.append(row);
+  if (focus) key.focus();
+  validate();
+  return row;
+}
+$('#add-var').onclick = () => addRow('', '', true);
+
+/* ---------- dock + simulated deploy (a taste of the "alive" page) ---------- */
+function updateDock() {
+  const vars = envState.count;
+  $('#dock-summary').textContent = `${d.steps.length} steps · ${vars} variable${vars === 1 ? '' : 's'}`;
+  const bad = envState.errors > 0;
+  $('#deploy').disabled = bad;
+  $('#deploy').title = bad ? 'Fix the highlighted variables first' : '';
+}
+function setMode(mode) {
+  $('#dock').dataset.mode = mode;
+  document.body.dataset.mode = mode;
+  $('#env').inert = mode !== 'idle';
+}
+
+let runId = 0;
+const ticks = new Set();
+const speed = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.2 : 1;
+const sleep = ms => new Promise(r => setTimeout(r, ms * speed));
+const duration = c => /^mkdir/.test(c) ? 500 : /install/.test(c) ? 2200 : /build/.test(c) ? 2800 : 900;
+
+function reset() {
+  runId++;
+  ticks.forEach(clearInterval); ticks.clear();
+  document.querySelectorAll('.step').forEach(el => {
+    el.dataset.state = 'idle';
+    el.querySelector('.step-time').textContent = '';
+    el.classList.remove('open');
+    el.querySelector('.step-head').setAttribute('aria-expanded', 'false');
+    el.querySelectorAll('.cmd').forEach(c => c.dataset.state = 'idle');
+  });
+  syncToggleAll();
+  setStart('idle', 'Not running');
+  $('#bar').style.width = '0';
+  setMode('idle');
+}
+
+async function deploy() {
+  const id = ++runId;
+  const alive = () => id === runId;
+  const stepEls = [...document.querySelectorAll('.step')];
+  const total = 2 + d.steps.reduce((n, s) => n + Math.max(s.commands.length, 1), 0);
+  let done = 0;
+  const progress = () => { $('#bar').style.width = (done / total * 100) + '%'; };
+
+  setMode('deploying');
+  $('#bar').style.width = '0';
+  const t0 = performance.now();
+  $('#elapsed').textContent = '0:00';
+  const clock = setInterval(() => { $('#elapsed').textContent = mmss(performance.now() - t0); }, 250);
+  ticks.add(clock);
+
+  $('#stage').textContent = 'Cloning repository…';
+  await sleep(1200); if (!alive()) return;
+  done++; progress();
+
+  for (let i = 0; i < d.steps.length; i++) {
+    const step = d.steps[i], el = stepEls[i];
+    el.dataset.state = 'running';
+    setOpen(el, true);
+    $('#stage').textContent = `${cap(step.name)}…`;
+    const s0 = performance.now();
+    const timeEl = el.querySelector('.step-time');
+    const tick = setInterval(() => { timeEl.textContent = fmt(performance.now() - s0); }, 100);
+    ticks.add(tick);
+
+    const cmdEls = [...el.querySelectorAll('.cmd')];
+    for (let j = 0; j < step.commands.length; j++) {
+      cmdEls[j].dataset.state = 'running';
+      await sleep(duration(step.commands[j])); if (!alive()) return;
+      cmdEls[j].dataset.state = 'done';
+      done++; progress();
+    }
+    if (!step.commands.length) { await sleep(600); if (!alive()) return; done++; progress(); }
+
+    clearInterval(tick); ticks.delete(tick);
+    timeEl.textContent = fmt(performance.now() - s0);
+    el.dataset.state = 'done';
+    await sleep(350); if (!alive()) return;
+    setOpen(el, false);
+  }
+
+  $('#stage').textContent = 'Starting container…';
+  setStart('starting', 'Starting…');
+  await sleep(1000); if (!alive()) return;
+  done++; progress();
+
+  clearInterval(clock); ticks.delete(clock);
+  setStart('live', 'Live');
+  $('#live-url').textContent = `deployforge-web.example.app · ${mmss(performance.now() - t0)} total`;  // demo URL
+  setMode('live');
+  toast('Deployed successfully');
+}
+
+$('#deploy').onclick = deploy;
+$('#cancel').onclick = reset;
+$('#reset').onclick = reset;
+
+/* ---------- init ---------- */
+addRow();
+syncToggleAll();
+</script>
+</body>
+</html>

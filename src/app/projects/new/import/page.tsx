@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 
-import { ProjectImportError } from "../../_components/project-import-error";
-import { ProjectImportSkeleton } from "../../_components/project-import-skeleton";
-import { ProjectInspectionResults } from "../../_components/project-inspection-results";
 import { inspectProject } from "../../_data/inspect-project";
 import { inspectProjectSchema } from "../../_schemas";
+import { ProjectImportError } from "./_components/project-import-error";
+import { ProjectImportSkeleton } from "./_components/project-import-skeleton";
+import { ProjectInspectionResults } from "./_components/project-inspection-results";
 
 type ImportProjectPageProps = {
   searchParams: Promise<{ sourceUrl?: string | string[] }>;
@@ -67,18 +67,7 @@ async function ImportProjectContent({ searchParams }: ImportProjectPageProps) {
 function ImportProjectLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen bg-zinc-50 px-4 py-12 dark:bg-black sm:px-6 sm:py-16">
-      <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-7 space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Review your repository
-          </h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Review the runtime and build configuration detected for this
-            repository.
-          </p>
-        </header>
-        {children}
-      </div>
+      <div className="mx-auto w-full max-w-3xl">{children}</div>
     </main>
   );
 }
