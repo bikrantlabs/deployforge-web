@@ -8,10 +8,12 @@ import { ACCESS_TOKEN_COOKIE_KEY } from "../cookie-config";
 import { ApiError } from "./errors";
 
 type Query = Record<string, string | number | boolean | undefined | null>;
+type PathParams = Record<string, string | number>;
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   query?: Query;
+  path?: PathParams;
   body?: unknown;
   headers?: HeadersInit;
   // Next.js caching
@@ -20,6 +22,21 @@ type RequestOptions = {
   cache?: RequestCache;
   signal?: AbortSignal;
 };
+function fillPath(template: string, params: PathParams = {}) {
+  return template.replaceAll(/:(\w+)/g, (_, key: string) => {
+    const value = params[key];
+    if (value === undefined || value === null || String(value) === "") {
+      throw new Error(`Missing path param "${key}" for "${template}"`);
+    }
+    const str = String(value);
+    // encodeURIComponent leaves dots alone, and new URL() would
+    // collapse "." / ".." segments into a different endpoint
+    if (str === "." || str === "..") {
+      throw new Error(`Invalid path param "${key}" for "${template}"`);
+    }
+    return encodeURIComponent(str);
+  });
+}
 
 function buildUrl(path: string, query?: Query) {
   const baseUrl = env.API_URL.endsWith("/") ? env.API_URL : `${env.API_URL}/`;
@@ -34,9 +51,13 @@ function buildUrl(path: string, query?: Query) {
   return url;
 }
 
-async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+async function request<T>(
+  template: string,
+  opts: RequestOptions = {},
+): Promise<T> {
   const {
     method = "GET",
+    path: pathParams,
     query,
     body,
     headers,
@@ -49,7 +70,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const token = (await cookies()).get(ACCESS_TOKEN_COOKIE_KEY)?.value;
   const isFormData = body instanceof FormData;
 
-  const res = await fetch(buildUrl(path, query), {
+  const res = await fetch(buildUrl(fillPath(template, pathParams), query), {
     method,
     headers: {
       Accept: "application/json",

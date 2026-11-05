@@ -49,3 +49,24 @@ export type InspectProjectResponse = ApiResponse<{
   existing: boolean;
 }>;
 export type GetAllProjectResponse = ApiResponse<Project[]>;
+
+export type Deployment = {
+  deploymentId: string;
+  projectId: string;
+  status: DeploymentStatus | null;
+  imageRef: string | null;
+  errorMessage: string | null;
+  createdAt: string; // ISO from JSON
+  startedAt: string | null;
+  finishedAt: string | null;
+};
+export type DeploymentStatus =
+  "queued" | "building" | "built" | "failed" | "live" | "cancelled";
+
+export type DeployProjectResponse = ApiResponse<{
+  project: Project;
+  deployment: {
+    deploymentId: string;
+    projectId: string;
+  };
+}>;
