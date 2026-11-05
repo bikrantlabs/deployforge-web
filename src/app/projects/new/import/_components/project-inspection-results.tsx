@@ -2,6 +2,7 @@ import type { InspectionViewData } from "../../../_types/inspection";
 import { ImportProjectProvider } from "../import-context";
 import { BuildStepsSection } from "./build-steps-section";
 import { Deploy } from "./deploy";
+import { DeploymentLogsSection } from "./deployment-logs-section";
 import { DetectedRuntimeSection } from "./detected-runtime-section";
 import { EnvironmentVariablesSection } from "./environment-variables-section";
 import { ProjectInspectionHeader } from "./project-inspection-header";
@@ -12,20 +13,13 @@ export function ProjectInspectionResults({
 }: {
   data: InspectionViewData;
 }) {
-  const { project, detection, existing } = data;
+  const { project, detection } = data;
 
   return (
     <ImportProjectProvider>
       <section className="w-full space-y-8" aria-label="Repository inspection">
-        <ProjectInspectionHeader
-          project={project}
-          existing={existing}
-          detection={detection}
-        />
-        <ProjectNameInput
-          detectedName={project.projectName}
-          existingProject={existing}
-        />
+        <ProjectInspectionHeader project={project} detection={detection} />
+        <ProjectNameInput detectedName={project.projectName} />
         <DetectedRuntimeSection
           resolvedPackages={detection.resolvedPackages}
           metadata={detection.metadata}
@@ -38,6 +32,7 @@ export function ProjectInspectionResults({
         <div className="flex justify-end items-center w-full">
           <Deploy project={project} />
         </div>{" "}
+        <DeploymentLogsSection />
       </section>
     </ImportProjectProvider>
   );

@@ -11,22 +11,33 @@ import type { Project } from "@/lib/api/response";
 import { useImportProjectContext } from "../import-context";
 
 export function Deploy({ project }: { project: Omit<Project, "userId"> }) {
-  const { projectNameExists, projectName, environmentVariables } =
-    useImportProjectContext();
-  const [state, formAction, isPending] = useActionState(deployAction, {});
+  const {
+    projectNameExists,
+    projectName,
+    setProjectCreated,
+    environmentVariables,
+    setDeploymentId,
+  } = useImportProjectContext();
+  const [state, formAction, isPending] = useActionState(deployAction, {
+    data: null,
+  });
 
   useEffect(() => {
-    if (!state.message || state.success === undefined) return;
+    if (!state.message || state.success === undefined) {
+      setProjectCreated(false);
+      return;
+    }
     if (state.success) {
+      setProjectCreated(true);
+      setDeploymentId(state.data?.data.deployment.deploymentId ?? null);
       toast.success(state.message);
     } else {
+      setProjectCreated(false);
       toast.error(state.message);
     }
-  }, [state]);
-  // TODO: if state is success, redirect to the page that connects with SSE.
-  // FIX Deploying bug first.
+  }, [state, setProjectCreated, setDeploymentId]);
+
   function handleClick() {
-    // The dispatch must run inside a transition when not used via <form action>
     startTransition(() => {
       formAction({
         project: {

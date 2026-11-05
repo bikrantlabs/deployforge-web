@@ -1,11 +1,13 @@
-import type { InspectProjectResponse } from "@/lib/api/response";
+import type { ProjectDetection } from "@/types/project-detection.types";
 
-export type InspectionViewData = Omit<
-  InspectProjectResponse["data"],
-  "project" | "detection"
-> & {
-  project: Omit<InspectProjectResponse["data"]["project"], "userId">;
-  detection: Omit<InspectProjectResponse["data"]["detection"], "variables">;
+export type InspectionViewData = {
+  existing: boolean;
+  project: {
+    projectId: string;
+    projectName: string;
+    sourceUrl: string;
+  };
+  detection: Omit<ProjectDetection, "variables">;
 };
 
 export type InspectProjectState = {

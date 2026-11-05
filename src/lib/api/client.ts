@@ -39,7 +39,9 @@ function fillPath(template: string, params: PathParams = {}) {
 }
 
 function buildUrl(path: string, query?: Query) {
-  const baseUrl = env.API_URL.endsWith("/") ? env.API_URL : `${env.API_URL}/`;
+  const baseUrl = env.NEXT_PUBLIC_API_URL.endsWith("/")
+    ? env.NEXT_PUBLIC_API_URL
+    : `${env.NEXT_PUBLIC_API_URL}/`;
   const relativePath = path.startsWith("/") ? path.slice(1) : path;
   const url = new URL(relativePath, baseUrl);
 

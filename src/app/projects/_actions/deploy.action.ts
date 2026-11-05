@@ -2,6 +2,7 @@
 
 import { ApiError } from "@/lib/api/errors";
 import { projectApi, type DeployProjectInput } from "@/lib/api/projects.api";
+import type { DeployProjectResponse } from "@/lib/api/response";
 import { auth } from "@/lib/auth";
 
 import { deployProjectSchema } from "../_schemas";
@@ -10,6 +11,7 @@ export type DeployState = {
   success?: boolean;
   message?: string;
   errorCode?: string;
+  data: DeployProjectResponse | null;
 };
 
 export async function deployAction(
@@ -24,6 +26,7 @@ export async function deployAction(
       success: false,
       message: "You must be signed in to deploy a project.",
       errorCode: "UNAUTHORIZED",
+      data: null,
     };
   }
 
@@ -37,6 +40,7 @@ export async function deployAction(
       success: false,
       message: "The project details are invalid.",
       errorCode: "INVALID_INPUT",
+      data: null,
     };
   }
 
@@ -53,6 +57,7 @@ export async function deployAction(
     return {
       success: true,
       message: res.message,
+      data: res,
     };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -60,6 +65,7 @@ export async function deployAction(
         success: error.body.success,
         message: error.body.error.message,
         errorCode: error.body.error.code,
+        data: null,
       };
     }
 

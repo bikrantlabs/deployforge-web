@@ -8,7 +8,7 @@ const envSchema = z.object({
     .default("development"),
 
   // external API
-  API_URL: z.url(),
+  NEXT_PUBLIC_API_URL: z.url(),
 
   // auth
   SESSION_COOKIE_NAME: z.string().default("token"),

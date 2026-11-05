@@ -16,6 +16,25 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Docker
+
+Build the image with the API URL that should be embedded in the browser bundle:
+
+```sh
+docker build --build-arg NEXT_PUBLIC_API_URL=https://api.example.com/api/v1 -t deployforge-web .
+```
+
+Pass server-only settings when starting the container. `SESSION_SECRET` must be at least 32 characters:
+
+```sh
+docker run --rm -p 3000:3000 \
+  -e SESSION_SECRET="$SESSION_SECRET" \
+  -e SESSION_COOKIE_NAME=token \
+  deployforge-web
+```
+
+`NEXT_PUBLIC_API_URL` is fixed at image build time by Next.js. `SESSION_SECRET` is supplied at runtime and is not baked into the image.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
