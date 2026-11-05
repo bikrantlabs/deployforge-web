@@ -41,16 +41,30 @@ export function useDeploymentLogs(
 
     es.onopen = () => update(() => ({ status: "open" }));
 
+    let hasStarted = false;
+    const seenSeqs = new Set<number>();
+
     es.addEventListener("log", (event) => {
       const chunk = JSON.parse(event.data) as LogChunk;
 
-      update((current) => {
-        if (current.chunks.some((existing) => existing.seq === chunk.seq)) {
-          return {}; // Already received this chunk.
-        }
+      if (seenSeqs.has(chunk.seq)) return;
+      seenSeqs.add(chunk.seq);
 
-        return { chunks: [...current.chunks, chunk] };
-      });
+      let lines = chunk.lines;
+      if (!hasStarted) {
+        const startIndex = lines.findIndex((line) =>
+          /starting\s+docker\s+build/i.test(line),
+        );
+
+        if (startIndex === -1) return;
+
+        hasStarted = true;
+        lines = lines.slice(startIndex);
+      }
+
+      update((current) => ({
+        chunks: [...current.chunks, { ...chunk, lines }],
+      }));
     });
 
     es.addEventListener("done", () => {

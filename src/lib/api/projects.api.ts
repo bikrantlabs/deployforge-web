@@ -15,9 +15,14 @@ type CreateProjectInput = {
   projectName: string;
 };
 
+export type CommandOverrides = Partial<
+  Record<"build" | "install" | "start", string>
+>;
 export type DeployProjectInput = {
   project: Omit<Project, "userId">;
   envVariables: Record<string, string>;
+  commandOverrides?: CommandOverrides;
+  pruneDevDependencies?: boolean; // Default true
 };
 type InspectProjectInput = Omit<CreateProjectInput, "projectName">;
 export const projectApi = {
