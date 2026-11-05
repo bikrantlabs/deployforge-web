@@ -1,4 +1,4 @@
-import { DeploymentListSkeleton } from "@/app/deployments/_components/skeletons";
+import { DeploymentListSkeleton } from "./deployments/skeletons";
 
 export function ProjectsSkeleton() {
   return (

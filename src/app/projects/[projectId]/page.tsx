@@ -9,11 +9,6 @@ import {
   RocketLaunchIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-import {
-  DeploymentEmptyState,
-  DeploymentList,
-} from "@/app/deployments/_components/deployment-list";
-import { DeploymentStatusBadge } from "@/app/deployments/_components/deployment-status";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PageShell } from "@/components/page-shell";
 import { StatCard } from "@/components/stat-card";
@@ -22,8 +17,17 @@ import { ApiError } from "@/lib/api/errors";
 import { projectApi } from "@/lib/api/projects.api";
 import type { Deployment, Project } from "@/lib/api/response";
 import { formatDateTime, repoLabel, shortId } from "@/lib/format";
+import {
+  projectDeploymentPath,
+  projectDeploymentsPath,
+} from "@/lib/project-routes";
 
 import { DeleteProjectButton } from "../_components/delete-project-button";
+import {
+  DeploymentEmptyState,
+  DeploymentList,
+} from "../_components/deployments/deployment-list";
+import { DeploymentStatusBadge } from "../_components/deployments/deployment-status";
 import { ProjectDetailSkeleton } from "../_components/skeletons";
 
 type ProjectPageProps = {
@@ -103,7 +107,7 @@ async function ProjectDetail({ params }: ProjectPageProps) {
 
         <div className="flex w-fit shrink-0 flex-wrap items-center gap-2">
           <Button asChild variant="outline" size="lg" className="rounded-lg">
-            <Link href={`/projects/${project.projectId}/deployments`}>
+            <Link href={projectDeploymentsPath(project.projectId)}>
               All deployments
               <ArrowRightIcon aria-hidden="true" weight="bold" />
             </Link>
@@ -157,7 +161,7 @@ async function ProjectDetail({ params }: ProjectPageProps) {
           </div>
           {sortedDeployments.length > 5 ? (
             <Link
-              href={`/projects/${project.projectId}/deployments`}
+              href={projectDeploymentsPath(project.projectId)}
               className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
               View all
@@ -171,7 +175,7 @@ async function ProjectDetail({ params }: ProjectPageProps) {
           <DeploymentList
             deployments={sortedDeployments.slice(0, 5)}
             hrefFor={(deployment) =>
-              `/projects/${project.projectId}/deployments/${deployment.deploymentId}`
+              projectDeploymentPath(project.projectId, deployment.deploymentId)
             }
           />
         )}

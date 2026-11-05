@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState, type ClipboardEvent } from "react";
+import { useEffect, useRef, useState, type ClipboardEvent } from "react";
 
 import { Eye, EyeSlash, Plus, Trash } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+import { useImportProjectContext } from "../import-context";
+import { CollapsibleSection } from "./collapsible-section";
 
 type VariableRow = {
   id: number;
@@ -17,11 +20,23 @@ type VariableRow = {
 const variableKeyPattern = /^[A-Z_a-z]\w*$/;
 
 export function EnvironmentVariablesSection() {
+  const { setEnvironmentVariables } = useImportProjectContext();
   const nextId = useRef(1);
   const [rows, setRows] = useState<VariableRow[]>([
     { id: 0, key: "", value: "", visible: false },
   ]);
   const [importMessage, setImportMessage] = useState("");
+
+  useEffect(() => {
+    const variables: Record<string, string> = {};
+    for (const row of rows) {
+      const key = row.key.trim();
+      if (key) {
+        variables[key] = row.value;
+      }
+    }
+    setEnvironmentVariables(variables);
+  }, [rows, setEnvironmentVariables]);
 
   const keyCounts = new Map<string, number>();
   for (const row of rows) {
@@ -47,7 +62,15 @@ export function EnvironmentVariablesSection() {
   }
 
   function removeRow(id: number) {
-    setRows((current) => current.filter((row) => row.id !== id));
+    setRows((current) =>
+      current.length > 1
+        ? current.filter((row) => row.id !== id)
+        : current.map((row) =>
+            row.id === id
+              ? { ...row, key: "", value: "", visible: false }
+              : row,
+          ),
+    );
     setImportMessage("");
   }
 
@@ -88,22 +111,13 @@ export function EnvironmentVariablesSection() {
   }
 
   return (
-    <section className="space-y-3" aria-labelledby="environment-heading">
-      <div className="flex min-h-9 items-center justify-between gap-3">
-        <div>
-          <h2 id="environment-heading" className="text-base font-semibold">
-            Environment variables
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Keep secrets out of your source code.
-          </p>
-        </div>
-        <span className="text-xs text-muted-foreground">
-          {configuredCount > 0 ? `${configuredCount} added` : "Optional"}
-        </span>
-      </div>
-
-      <div className="rounded-xl border bg-card p-3 sm:p-4">
+    <CollapsibleSection
+      description="Keep secrets out of your source code."
+      id="environment"
+      summary={configuredCount > 0 ? `${configuredCount} added` : "Optional"}
+      title="Environment variables"
+    >
+      <div className="p-3 sm:p-4">
         {rows.length > 0 ? (
           <>
             <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.5rem] gap-2 px-1 pb-2 text-xs text-muted-foreground sm:grid">
@@ -150,7 +164,6 @@ export function EnvironmentVariablesSection() {
                         autoComplete="off"
                         autoCapitalize="off"
                         spellCheck={false}
-                        className="h-10 rounded-lg font-mono text-sm"
                       />
                       {error ? (
                         <p
@@ -171,7 +184,7 @@ export function EnvironmentVariablesSection() {
                       </label>
                       <Input
                         id={`env-value-${row.id}`}
-                        type={row.visible ? "text" : "password"}
+                        type="text"
                         value={row.value}
                         onChange={(event) =>
                           updateRow(row.id, { value: event.target.value })
@@ -179,8 +192,13 @@ export function EnvironmentVariablesSection() {
                         placeholder="Value"
                         aria-label="Variable value"
                         autoComplete="off"
+                        autoCapitalize="off"
                         spellCheck={false}
-                        className="h-10 rounded-lg pr-11 font-mono text-sm"
+                        className={
+                          row.visible
+                            ? undefined
+                            : "[-webkit-text-security:disc]"
+                        }
                       />
                       <button
                         type="button"
@@ -239,7 +257,7 @@ export function EnvironmentVariablesSection() {
           {importMessage}
         </p>
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

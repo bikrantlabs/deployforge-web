@@ -10,6 +10,7 @@ import {
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { projectApi } from "@/lib/api/projects.api";
+import { allDeploymentsPath } from "@/lib/project-routes";
 
 import { ProjectCard } from "./_components/project-card";
 import { ProjectsSkeleton } from "./_components/skeletons";
@@ -44,7 +45,7 @@ async function ProjectList() {
         </div>
         <div className="flex w-fit flex-wrap items-center gap-2">
           <Button asChild variant="outline" size="lg" className="rounded-lg">
-            <Link href="/deployments">
+            <Link href={allDeploymentsPath}>
               <RocketLaunchIcon aria-hidden="true" weight="duotone" />
               Deployments
             </Link>

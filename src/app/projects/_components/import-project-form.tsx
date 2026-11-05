@@ -10,7 +10,9 @@ export function ImportProjectForm() {
       className="flex w-full flex-col gap-4 rounded-xl border bg-card p-5 text-card-foreground sm:p-6"
     >
       <div className="space-y-1">
-        <Label htmlFor="sourceUrl">Repository URL</Label>
+        <Label htmlFor="sourceUrl">
+          Repository URL (Public Github or Gitlab for now)
+        </Label>
       </div>
       <Input
         name="sourceUrl"
@@ -19,7 +21,7 @@ export function ImportProjectForm() {
         required
         placeholder="https://github.com/owner/repository"
       />
-      <Button className="w-full sm:w-fit">Inspect repository</Button>
+      <Button className="w-full sm:w-fit">Import repository</Button>
     </form>
   );
 }

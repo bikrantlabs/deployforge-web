@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api/errors";
 import { projectApi } from "@/lib/api/projects.api";
 import { auth } from "@/lib/auth";
+import {
+  allDeploymentsPath,
+  projectDeploymentsPath,
+} from "@/lib/project-routes";
 
 export type DeleteProjectState = {
   success: boolean;
@@ -50,7 +54,8 @@ export async function deleteProjectAction(input: {
 
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
-  revalidatePath("/deployments");
+  revalidatePath(projectDeploymentsPath(projectId));
+  revalidatePath(allDeploymentsPath);
 
   return {
     success: true,

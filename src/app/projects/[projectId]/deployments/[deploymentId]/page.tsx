@@ -1,14 +1,19 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { DeploymentDetailView } from "@/app/deployments/_components/deployment-detail-view";
-import { DeploymentDetailSkeleton } from "@/app/deployments/_components/skeletons";
 import { PageShell } from "@/components/page-shell";
 import { deploymentApi } from "@/lib/api/deployments.api";
 import { ApiError } from "@/lib/api/errors";
 import { projectApi } from "@/lib/api/projects.api";
 import type { Deployment, Project } from "@/lib/api/response";
 import { shortId } from "@/lib/format";
+import {
+  ALL_DEPLOYMENTS_SLUG,
+  projectDeploymentsPath,
+} from "@/lib/project-routes";
+
+import { DeploymentDetailView } from "../../../_components/deployments/deployment-detail-view";
+import { DeploymentDetailSkeleton } from "../../../_components/deployments/skeletons";
 
 type DeploymentPageProps = {
   params: Promise<{ projectId: string; deploymentId: string }>;
@@ -26,25 +31,38 @@ export default function DeploymentPage({ params }: DeploymentPageProps) {
 
 async function DeploymentDetail({ params }: DeploymentPageProps) {
   const { projectId, deploymentId } = await params;
+  const isAllDeployments = projectId === ALL_DEPLOYMENTS_SLUG;
 
   let deployment: Deployment;
   let project: Project;
 
   try {
-    [deployment, project] = await Promise.all([
-      deploymentApi.getDeployment({ deploymentId }),
-      projectApi.getProjectForUser({ projectId }),
-    ]);
+    if (isAllDeployments) {
+      deployment = await deploymentApi.getDeployment({ deploymentId });
+      project = await projectApi.getProjectForUser({
+        projectId: deployment.projectId,
+      });
+    } else {
+      [deployment, project] = await Promise.all([
+        deploymentApi.getDeployment({ deploymentId }),
+        projectApi.getProjectForUser({ projectId }),
+      ]);
+    }
   } catch (error) {
     if (error instanceof ApiError && error.isNotFound) notFound();
     throw error;
   }
 
-  return (
-    <DeploymentDetailView
-      deployment={deployment}
-      project={project}
-      breadcrumbs={[
+  const breadcrumbs = isAllDeployments
+    ? [
+        { label: "Projects", href: "/projects" },
+        {
+          label: "Deployments",
+          href: projectDeploymentsPath(ALL_DEPLOYMENTS_SLUG),
+        },
+        { label: shortId(deployment.deploymentId) },
+      ]
+    : [
         { label: "Projects", href: "/projects" },
         {
           label: project.projectName,
@@ -52,12 +70,22 @@ async function DeploymentDetail({ params }: DeploymentPageProps) {
         },
         {
           label: "Deployments",
-          href: `/projects/${project.projectId}/deployments`,
+          href: projectDeploymentsPath(project.projectId),
         },
         { label: shortId(deployment.deploymentId) },
-      ]}
-      backHref={`/projects/${project.projectId}`}
-      backLabel="Back to project"
+      ];
+
+  return (
+    <DeploymentDetailView
+      deployment={deployment}
+      project={project}
+      breadcrumbs={breadcrumbs}
+      backHref={
+        isAllDeployments
+          ? projectDeploymentsPath(ALL_DEPLOYMENTS_SLUG)
+          : `/projects/${project.projectId}`
+      }
+      backLabel={isAllDeployments ? "Back to deployments" : "Back to project"}
     />
   );
 }

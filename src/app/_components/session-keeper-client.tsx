@@ -1,7 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+
+import { SESSION_REFRESH_PATH } from "@/lib/auth-routes";
+import { refreshSession } from "@/lib/session-refresh";
 
 const REFRESH_LEEWAY_MS = 60_000;
 const MIN_DELAY_MS = 1_000;
@@ -9,8 +12,6 @@ const RETRY_DELAY_MS = 30_000;
 // Used when the access token is not a readable JWT. Matches the cookie's
 // lifetime, so we refresh on the same cadence the browser uses to drop it.
 const FALLBACK_INTERVAL_MS = 13 * 60_000;
-
-const LOCK_NAME = "session-refresh";
 
 type Props = {
   needsRefresh: boolean;
@@ -27,9 +28,14 @@ type Props = {
  */
 export function SessionKeeperClient({ needsRefresh, expiresAt }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const lastRefreshAt = useRef(0);
 
   useEffect(() => {
+    // The interstitial owns the refresh while it is mounted. Running both would
+    // rotate the refresh token twice for the same navigation.
+    if (pathname === SESSION_REFRESH_PATH) return;
+
     let timer: ReturnType<typeof setTimeout> | undefined;
     let cancelled = false;
 
@@ -39,48 +45,31 @@ export function SessionKeeperClient({ needsRefresh, expiresAt }: Props) {
       timer = setTimeout(() => void refresh(), Math.max(delayMs, MIN_DELAY_MS));
     };
 
-    const runRefresh = async () => {
-      try {
-        const res = await fetch("/api/auth/refresh", {
-          method: "POST",
-          credentials: "same-origin",
-          cache: "no-store",
-        });
-
-        if (cancelled) return;
-
-        // The session is genuinely over. Re-render and let the proxy send the
-        // user to the login page.
-        if (res.status === 401) {
-          router.refresh();
-          return;
-        }
-
-        // API hiccup: keep the session and try again shortly.
-        if (!res.ok) {
-          schedule(RETRY_DELAY_MS);
-          return;
-        }
-
-        lastRefreshAt.current = Date.now();
-
-        // New cookies are already in the browser. Re-render the server tree so
-        // it picks them up, and so this component receives a fresh expiry.
-        router.refresh();
-      } catch {
-        schedule(RETRY_DELAY_MS);
-      }
-    };
-
     const refresh = async () => {
       if (cancelled) return;
 
-      // One refresh at a time across every open tab.
-      if (typeof navigator !== "undefined" && "locks" in navigator) {
-        await navigator.locks.request(LOCK_NAME, runRefresh);
-      } else {
-        await runRefresh();
+      const result = await refreshSession();
+
+      if (cancelled) return;
+
+      // The session is genuinely over. Re-render and let the proxy send the
+      // user to the login page.
+      if (result === "unauthenticated") {
+        router.refresh();
+        return;
       }
+
+      // API hiccup: keep the session and try again shortly.
+      if (result === "unavailable") {
+        schedule(RETRY_DELAY_MS);
+        return;
+      }
+
+      lastRefreshAt.current = Date.now();
+
+      // New cookies are already in the browser. Re-render the server tree so
+      // it picks them up, and so this component receives a fresh expiry.
+      router.refresh();
     };
 
     // True when the token is (about to be) too old to use.
@@ -123,7 +112,7 @@ export function SessionKeeperClient({ needsRefresh, expiresAt }: Props) {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onOnline);
     };
-  }, [needsRefresh, expiresAt, router]);
+  }, [needsRefresh, expiresAt, router, pathname]);
 
   return null;
 }
