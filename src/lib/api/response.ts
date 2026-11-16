@@ -63,6 +63,13 @@ export type Deployment = {
 export type DeploymentStatus =
   "queued" | "building" | "built" | "failed" | "live" | "cancelled";
 
+export const TERMINAL_STATUS: DeploymentStatus[] = [
+  "failed",
+  "built", // TODO: Remove built from the terminal status list once we have a proper deployment flow.
+  "live",
+  "cancelled",
+];
+
 export type DeployProjectResponse = ApiResponse<{
   project: Project;
   deployment: {

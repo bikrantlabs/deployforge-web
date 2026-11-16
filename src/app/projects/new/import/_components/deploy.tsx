@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/app/_components/ui/button";
 import { deployAction } from "@/app/projects/_actions/deploy.action";
+import { useDeploymentStatus } from "@/app/projects/_hooks/use-deployment-status";
 import type { Project } from "@/lib/api/response";
 
 import { useImportProjectContext } from "../import-context";
@@ -18,6 +19,8 @@ export function Deploy({ project }: { project: Omit<Project, "userId"> }) {
     environmentVariables,
     setDeploymentId,
   } = useImportProjectContext();
+  useDeploymentStatus();
+
   const [state, formAction, isPending] = useActionState(deployAction, {
     data: null,
   });

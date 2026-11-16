@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import type { Deployment, DeploymentStatus, Project } from "@/lib/api/response";
 import { formatDateTime, formatDuration, shortId } from "@/lib/format";
 
+import { DeploymentLogs } from "./deployment-logs";
 import { DeploymentStatusBadge, getStatusMeta } from "./deployment-status";
 
 const STATUS_DESCRIPTION: Record<DeploymentStatus, string> = {
@@ -191,6 +192,12 @@ export function DeploymentDetailView({
           </ol>
         </section>
       </div>
+
+      <DeploymentLogs
+        deploymentId={deployment.deploymentId}
+        expanded={false}
+        className="mt-4"
+      />
     </>
   );
 }

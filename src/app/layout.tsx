@@ -8,6 +8,8 @@ import { cn } from "cn";
 import { SessionKeeper } from "@/components/session-keeper";
 import { Toaster } from "@/components/ui/sonner";
 
+import { Providers } from "./providers";
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
@@ -38,13 +40,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         inter.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
-        <SessionKeeper />
+      <Providers>
+        <body className="min-h-full flex flex-col">
+          <SessionKeeper />
 
-        {children}
+          {children}
 
-        <Toaster richColors />
-      </body>
+          <Toaster richColors />
+        </body>
+      </Providers>
     </html>
   );
 }
